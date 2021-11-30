@@ -1,0 +1,166 @@
+﻿@using Webmotors.UI.Data;
+
+@inject Service Service
+@inject IModalService ModalService
+
+<div class="simple-form">
+    <EditForm Model="@Ad" OnValidSubmit="@HandleValidSubmit">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <input type="hidden" @bind-value="@Ad.ID" />
+
+            <label for="make">Marca</label>
+            <InputSelect id="make" class="form-control" @onchange="GetModels"
+                         @bind-Value="Make">
+                >
+                <option>Selecione</option>
+                @foreach (var make in Makes)
+                {
+                    <option value="@make">
+                        @make
+                    </option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Ad.Make)" />
+        </div>
+        <div class="form-group">
+            <label for="model">Modelo</label>
+            <InputSelect id="model" class="form-control"
+                         @bind-Value="Model">
+                >
+                <option value="">Selecione</option>
+                @foreach (var model in Models)
+                {
+                    <option value="@model">
+                        @model
+                    </option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Ad.Model)" />
+        </div>
+        <div class="form-group">
+            <label for="version">Versão</label>
+            <InputSelect id="version" class="form-control"
+                         @bind-Value="Ad.Version">
+                <option value="">Selecione</option>
+                @foreach (var version in Versions)
+                {
+                    <option value="@version">
+                        @version
+                    </option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => Ad.Version)" />
+        </div>
+
+        <div class="form-group">
+            <label for="year">Ano</label>
+            <InputNumber id="year" class="form-control" @bind-Value="@Ad.Year" />
+            <ValidationMessage For="@(() => Ad.Year)" />
+        </div>
+
+        <div class="form-group">
+            <label for="mileage">Quilometragem</label>
+            <InputNumber id="mileage" class="form-control" @bind-Value="@Ad.Mileage" />
+            <ValidationMessage For="@(() => Ad.Mileage)" />
+        </div>
+
+        <div class="form-group">
+            <label for="note">Observações</label>
+            <InputTextArea id="note" class="form-control" @bind-Value="@Ad.Note" />
+            <ValidationMessage For="@(() => Ad.Note)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button @onclick="@Cancel" type="button" class="btn btn-secondary">Cancelar</button>
+        @if (Ad.ID > 0)
+        {
+            <button @onclick="@Delete" type="button" class="btn btn-danger">Excluir</button>
+        }
+
+    </EditForm>
+
+    <div>
+
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] ModalParameters Parameters { get; set; }
+
+    int? ID { get; set; }
+    Ad Ad { get; set; }
+    List<string> Makes = new List<string>();
+    List<string> Models = new List<string>();
+    List<string> Versions = new List<string>();
+
+    public string Make
+    {
+        get => Ad.Make;
+        set
+        {
+            Ad.Make = value;
+            Model = "";
+            GetModels();
+        }
+    }
+
+    public string Model
+    {
+        get => Ad.Model;
+        set
+        {
+            Ad.Model = value;
+            Ad.Version = "";
+            GetVersions();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ID = Parameters.Get<int?>("ID");
+        Ad = Service.Load(ID);
+
+        GetMakes();
+        GetModels();
+        GetVersions();
+    }
+
+    private async void GetMakes()
+    {
+        Makes = Service.GetMakes().ToList();
+    }
+
+    private async void GetModels()
+    {
+        Models = Service.GetModels(Ad.Make).ToList();
+        StateHasChanged();
+    }
+
+    private async void GetVersions()
+    {
+        Versions = Service.GetVersions(Ad.Model).ToList();
+        StateHasChanged();
+    }
+
+    private async void HandleValidSubmit()
+    {
+        Service.Save(Ad);
+        ModalService.Close();
+    }
+
+
+    void Delete()
+    {
+        Service.Delete(Ad);
+        ModalService.Close();
+    }
+
+    void Cancel()
+    {
+        ModalService.Cancel();
+    }
+}

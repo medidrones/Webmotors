@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazored.Modal" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Webmotors.Application\Webmotors.Application.csproj" />
+    <ProjectReference Include="..\Webmotors.Infrastructure\Webmotors.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

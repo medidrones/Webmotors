@@ -1,0 +1,85 @@
+﻿@page "/ads"
+
+@using Webmotors.Domain.Interfaces.Services
+@using Webmotors.Domain.Interfaces.Responses
+
+@inject IAdService Service
+@inject IModalService Modal
+
+<h1>Anúncios</h1>
+
+<p>Lista de Anúncios Webmotors</p>
+
+<div>
+    <button @onclick="@(() => ShowDetailsModal())" class="btn btn-primary">Novo</button>
+</div>
+
+<p></p>
+
+@if (ads == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Versão</th>
+                <th>Ano</th>
+                <th>Quilometragem</th>
+                <th>Observação</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ad in ads)
+            {
+                <tr>
+                    <td>@ad.Make</td>
+                    <td>@ad.Model</td>
+                    <td>@ad.Version</td>
+                    <td>@ad.Year</td>
+                    <td>@ad.Mileage</td>
+                    <td>@ad.Note</td>
+                    <td>
+                        <button @onclick="@(() => ShowDetailsModal(ad.ID))" class="btn btn-primary">Detalhes</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<IAdResponse> ads;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LoadData();
+    }
+
+    void LoadData()
+    {
+        ads = Service.Get();
+    }
+
+    void ShowDetailsModal(int? id = null)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("ID", id);
+
+        Modal.Show<AdDetailsModal>("Detalhes", parameters);
+        Modal.OnClose += ModalClosed;
+    }
+
+    void ModalClosed(ModalResult modalResult)
+    {
+        LoadData();
+        StateHasChanged();
+
+        Modal.OnClose -= ModalClosed;
+    }
+}
